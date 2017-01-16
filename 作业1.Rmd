@@ -1,0 +1,101 @@
+---
+title: "金融数据分析quantmod作业1"
+author: "rockchen26sh"
+date: "2016-12-23"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r}
+library(quantmod)#加载包
+library(corrplot)
+library(scales)
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 第一题
+#1)求出Apple公司在2013.1-2013.10的股票总成交量使用
+
+```{r}
+getSymbols("AAPL",SCR="yahoo",from="2013-01-01",to="2013-10-31") 
+sum(Vo(AAPL))
+```
+# 第二题
+#2)找出这些股票暴涨暴跌的时间点（例如开盘价或收盘价比前一天涨跌幅度超过5%）
+```{r}
+options(digits=4)
+getSymbols("AAPL")
+getSymbols("MSFT")
+getSymbols("ORCL")
+getSymbols("GOOG")
+AAPL_delt<- Delt(Ad(AAPL),type="arithmetic")#使用考虑到有拆股除权的情况，故使用调整价格
+AAPL_up<- as.data.frame(AAPL_delt[which(AAPL_delt>0.05)])#涨幅超过5%的数据
+AAPL_down<- as.data.frame(AAPL_delt[which(AAPL_delt< -0.05)])#跌幅超过5%的数据
+AAPL_down<- cbind(row.names(AAPL_down),AAPL_down,"AAPL","down")
+AAPL_up<- cbind(row.names(AAPL_up),AAPL_up,"AAPL","up")
+colnames(AAPL_down)<- c("date","data","Company","updown")
+colnames(AAPL_up)<- c("date","data","Company","updown")
+
+MSFT_delt<- Delt(Ad(MSFT),type="arithmetic")#使用考虑到有拆股除权的情况，故使用调整价格
+MSFT_up<- as.data.frame(MSFT_delt[which(MSFT_delt>0.05)])#涨幅超过5%的数据
+MSFT_down<- as.data.frame(MSFT_delt[which(MSFT_delt< -0.05)])#跌幅超过5%的数据
+MSFT_down<- cbind(row.names(MSFT_down),MSFT_down,"MSFT","down")
+MSFT_up<- cbind(row.names(MSFT_up),MSFT_up,"MSFT","up")
+colnames(MSFT_down)<- c("date","data","Company","updown")
+colnames(MSFT_up)<- c("date","data","Company","updown")
+
+ORCL_delt<- Delt(Ad(ORCL),type="arithmetic")#使用考虑到有拆股除权的情况，故使用调整价格
+ORCL_up<- as.data.frame(ORCL_delt[which(ORCL_delt>0.05)])#涨幅超过5%的数据
+ORCL_down<- as.data.frame(ORCL_delt[which(ORCL_delt< -0.05)])#跌幅超过5%的数据
+ORCL_down<- cbind(row.names(ORCL_down),ORCL_down,"ORCL","down")
+ORCL_up<- cbind(row.names(ORCL_up),ORCL_up,"ORCL","up")
+colnames(ORCL_down)<- c("date","data","Company","updown")
+colnames(ORCL_up)<- c("date","data","Company","updown")
+
+GOOG_delt<- Delt(Ad(GOOG),type="arithmetic")#使用考虑到有拆股除权的情况，故使用调整价格
+GOOG_up<- as.data.frame(GOOG_delt[which(GOOG_delt>0.05)])#涨幅超过5%的数据
+GOOG_down<- as.data.frame(GOOG_delt[which(GOOG_delt< -0.05)])#跌幅超过5%的数据
+GOOG_down<- cbind(row.names(GOOG_down),GOOG_down,"GOOG","down")
+GOOG_up<- cbind(row.names(GOOG_up),GOOG_up,"GOOG","up")
+colnames(GOOG_down)<- c("date","data","Company","updown")
+colnames(GOOG_up)<- c("date","data","Company","updown")
+
+
+
+Total<- rbind(AAPL_down,AAPL_up,MSFT_down,MSFT_up,ORCL_down,ORCL_up,GOOG_down,GOOG_up)
+Total$date<-as.Date(Total$date)
+Total<- Total[order(Total$date),]
+Total$data<- percent(Total$data)
+DT::datatable(Total,filter = 'top')
+```
+#通过搜索引擎寻找是什么原因导致这些暴涨暴跌，观察（或用程序分析）数据，看就暴涨暴跌事件是否有可以利用的买卖规律  
+
+1.苹果 2007/1/9	    8.31%	第一代Iphone发布  
+
+2.苹果 2007/7/24	 -6.13%	AT&T发布最新财报，初代iPhone销量未达到逾期  
+
+3.苹果 2007/11/13	 10.54%	中移动表示正在洽谈出售iPhone  
+ 
+4.苹果 2008/9/29	-17.92%	"休伯蒂将苹果股价评级由“增持股份”(Overweight)下调至“持股观望”(Equal-weight)。美国众议院否决了对华尔街的救助计划"  
+
+5.苹果 2013/1/24	-12.36%	苹果利润未达预期  
+
+
+#第三题
+#3)截取一段时间内这四家公司股价数据（注意分红派息除权对股价的影响），用R中的相关性分析判断股价之间的相关性，或者用R基础课程第八周所讲的MIC指标对其进行分析
+```{r}
+getSymbols("AAPL",from="2014-01-01",to="2016-12-01")
+getSymbols("MSFT",from="2014-01-01",to="2016-12-01")
+getSymbols("ORCL",from="2014-01-01",to="2016-12-01")
+getSymbols("GOOG",from="2014-01-01",to="2016-12-01")
+
+total_ad<- data.frame(Ad(AAPL),Ad(MSFT),Ad(ORCL),Ad(GOOG))
+cor(total_ad)
+
+corrplot(cor(total_ad),order='AOE',addCoef.col = "grey")
+ #相关性分析图表展现
+```

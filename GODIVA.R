@@ -1,0 +1,22 @@
+xx<- c("SeaSalt",6,"Gong")
+xx<- matrix(xx,ncol=3,byrow=TRUE)
+xx<- data.frame(xx)
+colnames(xx)<- c("品种","数量","Owner")
+godiva_volume<- rbind(godiva_volume,xx)
+godiva_volume$数量<- as.numeric(godiva_volume$数量)
+library(ggplot2)
+ggplot(godiva_volume,aes(x=Style,y=Count,fill=Owner))+geom_col()+geom_text(aes(label=Count),position = position_stack(vjust = 0.5))
+ggplot(godiva_volume,aes(x=Owner,y=Count,fill=Style))+geom_col()+geom_text(aes(label=Count),position = position_stack(vjust = 0.5))
+ggplot(godiva_volume,aes(x=Style,y=Count,fill=Style))+geom_col()+geom_text(aes(label=Count),position = position_stack(vjust = 0.5))+facet_wrap(~Owner)+coord_flip()
+aggregate(godiva_volume$Count~godiva_volume$Style,FUN="sum")
+sum(godiva_volume$Count)
+
+
+ggplot(levis,aes(x=Owner,y=var6,fill=型号))+geom_col()+coord_flip()+geom_text(aes(label=price),position = position_stack(vjust = 0.5))
+library(reshape)
+gdv<- melt(godiva_volume,id=c("Style","Owner"))
+cast(gdv,Style~variable,sum)
+
+cast(gdv,Style+Owner~variable,sum)
+cast(gdv,Owner+Style~variable,sum)
+cast(gdv,Owner~variable,sum)
